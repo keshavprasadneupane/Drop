@@ -1,0 +1,143 @@
+# ==================================================
+# OS Files
+# ==================================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==================================================
+# IDE / Editor
+# ==================================================
+.vscode/
+.idea/
+.vs/
+*.suo
+*.user
+*.userossc
+*.sln.docstates
+
+# ==================================================
+# Python
+# ==================================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type Checkers
+.mypy_cache/
+.pyre/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ==================================================
+# FastAPI / Backend
+# ==================================================
+*.db
+*.sqlite
+*.sqlite3
+
+alembic/versions/*.pyc
+
+# Logs
+logs/
+*.log
+
+# Uploaded Files
+uploads/
+media/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# ==================================================
+# Node.js / MERN Frontend
+# ==================================================
+node_modules/
+
+# Package Managers
+.npm/
+.pnpm-store/
+.yarn/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build Output
+dist/
+build/
+.next/
+.nuxt/
+out/
+
+# Vite
+vite.svg
+
+# Coverage
+coverage/
+
+# ==================================================
+# React
+# ==================================================
+.eslintcache
+
+# ==================================================
+# Cache / Temporary Files
+# ==================================================
+.cache/
+temp/
+tmp/
+
+# ==================================================
+# Docker
+# ==================================================
+.docker/
+docker-compose.override.yml
+
+# ==================================================
+# Misc
+# ==================================================
+*.bak
+*.tmp
+*.swp
+*.swo
+*~
+
+# Binary / Executable Files
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.a
+*.lib
+
+# Extensionless binaries
+*.out
+*.bin
