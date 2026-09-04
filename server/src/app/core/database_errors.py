@@ -6,7 +6,7 @@ from typing import Iterable, Optional
 from fastapi import HTTPException
 from sqlalchemy.exc import DBAPIError, IntegrityError, OperationalError
 
-from app.core.exception import APIException, ErrorMsg
+from app.core.exception import APIException, ErrorMessage
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,7 +139,7 @@ class DatabaseErrorResolver:
 			# builds a clean, safe message from just the column name, not raw SQL.
 			if column_name and "not null" in db_error:
 				return APIException.UnprocessableEntity(
-					ErrorMsg.field_required(column_name),
+					ErrorMessage.field_required(column_name),
 					debug_detail=db_error,
 				)
 
@@ -161,7 +161,7 @@ class DatabaseErrorResolver:
 					else "field"
 				)
 				return APIException.UnprocessableEntity(
-					ErrorMsg.field_required(field),
+					ErrorMessage.field_required(field),
 					debug_detail=db_error,
 				)
 
@@ -184,17 +184,17 @@ class DatabaseErrorResolver:
 
 		if isinstance(error, OperationalError):
 			return APIException.ServiceUnavailable(
-				ErrorMsg.SERVICE_UNAVAILABLE,
+				ErrorMessage.SERVICE_UNAVAILABLE,
 				debug_detail=db_error,
 			)
 
 		if isinstance(error, DBAPIError):
 			return APIException.InternalServerError(
-				ErrorMsg.DATABASE_ERROR,
+				ErrorMessage.DATABASE_ERROR,
 				debug_detail=db_error,
 			)
 
 		return APIException.InternalServerError(
-			ErrorMsg.UNEXPECTED_ERROR,
+			ErrorMessage.UNEXPECTED_ERROR,
 			debug_detail=str(error),
 		)

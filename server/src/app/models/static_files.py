@@ -23,16 +23,34 @@ class StaticFileConstraintsName(Enum):
 	FK_STATIC_FILES_USER_ID = "fk_static_files_user_id"
 
 
+class MimeType(str, Enum):
+    """Enumeration for common MIME types and grouped validation helpers.
 
-class MimeType(Enum):
-	"""
-	An Enum for common MIME types, useful for validating and categorizing uploaded files.
-	You can expand this list based on your application's requirements.
-	"""
-	IMAGE_JPEG = "image/jpeg"
-	IMAGE_PNG = "image/png"
-	IMAGE_GIF = "image/gif"
-	PDF = "application/pdf"
+    Inherits from `str` and `Enum` to allow seamless string comparisons and 
+    automatic JSON serialization in API response frameworks like FastAPI/Pydantic.
+
+    Attributes:
+        IMAGE_*: Supported image MIME type constants.
+        PDF: Application PDF constant.
+        G_IMAGES: List of all supported image MIME types for file validation.
+        G_APPLICATIONS: List of all supported application MIME types.
+        G_ALL: Consolidated list of all registered MIME types.
+    """
+
+    IMAGE_JPEG = "image/jpeg"
+    IMAGE_PNG = "image/png"
+    IMAGE_GIF = "image/gif"
+    IMAGE_BMP = "image/bmp"
+    IMAGE_WEBP = "image/webp"
+
+    PDF = "application/pdf"
+
+    # Functional MIME type groups for batch validation.
+    # The 'G_' prefix denotes a list group rather than a single MIME type.
+    G_IMAGES = [IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_BMP, IMAGE_WEBP]
+    G_APPLICATIONS = [PDF]
+
+    G_ALL = G_IMAGES + G_APPLICATIONS
 
 
 class MimeTypeString(TypeDecorator):

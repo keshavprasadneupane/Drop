@@ -17,7 +17,7 @@ class RegisterRequest(BaseModel):
 	password: str
 	username: str
 	full_name: str
-	role:Optional[str] = UserRole.READER.value
+	role:Optional[str] = UserRole.CUSTOMER.value
 
 
 class RegisterResponse(BaseModel):

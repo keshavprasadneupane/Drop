@@ -1,6 +1,7 @@
 from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
+from app.core.database import DB
 
 from sqlalchemy import (
 	Integer, String, Boolean, Text, ForeignKey, DateTime, UniqueConstraint,
@@ -22,8 +23,8 @@ class UserRole(str, Enum):
 	"""
 	SUPER = "super"
 	ADMIN = "admin"
-	DEVELOPER = "developer"
-	READER = "reader" # this represents the base role with read-only access to the system
+	LISTER = "lister" # this represents a user with the ability to list and view items
+	CUSTOMER = "customer" # this represents a user with the ability to make purchases
 
 
 	@property
@@ -31,51 +32,14 @@ class UserRole(str, Enum):
 		"""Returns a human-readable label for frontend display."""
 		return self.name.replace("_", " ").title()
 
-	@property
-	def hierarchy_level(self) -> int:
-		"""
-		Maps each role to a numerical weight for easy clearance level evaluations.
-		Higher number means greater authorization.
-		"""
-		weights = {
-			UserRole.READER: 10,
-			UserRole.DEVELOPER: 20,
-			UserRole.ADMIN: 30,
-			UserRole.SUPER: 40,
-		}
-		return weights[self]
-
 	def has_clearance(self, required_role: "UserRole") -> bool:
 		"""
-		Checks if this role meets or exceeds the required permission level.
-		
-		Example:
-			current_user.role.has_clearance(UserRole.DEVELOPER)
+		Checks if the current role has clearance for the required role.
+		:param required_role: The role to check against.
+		:return: True if the current role has clearance, False otherwise.
 		"""
-		return self.hierarchy_level >= required_role.hierarchy_level
-
-	# --- Domain Specific Permission Helpers ---
-
-	@property
-	def can_create_admin(self) -> bool:
-		"""Only SUPER roles are authorized to provision or promote administrative accounts."""
-		return self == UserRole.SUPER
-
-	@property
-	def can_manage_users(self) -> bool:
-		"""ADMIN and SUPER roles possess user management credentials."""
-		return self.has_clearance(UserRole.ADMIN)
-
-	@property
-	def can_modify_tickets(self) -> bool:
-		"""DEVELOPER level and up can open, modify, or delete issue tickets."""
-		return self.has_clearance(UserRole.DEVELOPER)
-
-	@property
-	def is_read_only(self) -> bool:
-		"""Base users are explicitly confined to read-only views across the application."""
-		return self == UserRole.READER
-
+		return self == required_role
+	
 
 class UserConstraints(Enum):
 	# Unique constraints for the User model
@@ -86,22 +50,22 @@ class UserConstraints(Enum):
 class User(Base):
 	__tablename__ = "users"
 	__table_args__ = (
-        UniqueConstraint(
-            "email",
-            name=UserConstraints.EMAIL_UQ.value,
-        ),
-        UniqueConstraint(
-            "username",
-            name=UserConstraints.USERNAME_UQ.value,
-        ),
-    )
+		UniqueConstraint(
+			"email",
+			name=UserConstraints.EMAIL_UQ.value,
+		),
+		UniqueConstraint(
+			"username",
+			name=UserConstraints.USERNAME_UQ.value,
+		),
+	)
 	
 	id: Mapped[int] = mapped_column(Integer, primary_key=True)
 	email: Mapped[EmailStr] = mapped_column(String(255), nullable=False)
 	username: Mapped[str] = mapped_column(String(50), nullable=False)
 	full_name: Mapped[Optional[str]] = mapped_column(String(100))
 	hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-	role: Mapped[UserRole] = mapped_column(String(50), nullable=False, default=UserRole.READER)
+	role: Mapped[UserRole] = mapped_column(String(50), nullable=False, default=UserRole.CUSTOMER)
 	is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 	created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 	updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())

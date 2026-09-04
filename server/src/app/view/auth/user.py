@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 from app.controller.auth.auth_controller import AuthController
-from app.view.deps import AnyUser
-from app.core.exception import APIException,ErrorMsg
+from app.view.deps import CustomerUser
+from app.core.exception import APIException,ErrorMessage
 from app.core.database import DB
 from app.schema.auth import MeResponse
 from fastapi import status
 
-from app.view.deps import AnyUser
+from app.view.deps import CustomerUser
 
 
 router = APIRouter()# the parent has defined prefix and tags, so no need to define here
@@ -17,7 +17,7 @@ router = APIRouter()# the parent has defined prefix and tags, so no need to defi
 	status_code=status.HTTP_200_OK,
 	response_model=MeResponse
 )
-def get_user_basic_info(user: AnyUser, db: DB):
+def get_user_basic_info(user: CustomerUser, db: DB):
 	"""
 	Returns basic information about the currently authenticated user.
 
@@ -36,7 +36,7 @@ def get_user_basic_info(user: AnyUser, db: DB):
 			# Authentication is handled by the dependency layer.
 			# this will never run since the dependency will raise an exception if the user is not authenticated.
 			# but just in case, we will raise an Unauthorized exception with a generic message.
-			raise APIException.Unauthorized(ErrorMsg.INVALID_CREDENTIALS)
+			raise APIException.Unauthorized(ErrorMessage.INVALID_CREDENTIALS)
 
 		# No controller is used because this endpoint contains no
 		# business logic and simply returns data already provided

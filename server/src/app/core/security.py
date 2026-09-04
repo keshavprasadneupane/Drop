@@ -1,12 +1,11 @@
 from __future__ import annotations
 from datetime import datetime, timedelta, UTC
-from typing import Optional, Annotated
-
+from typing import  Annotated
 import jwt
-from pydantic import EmailStr, EmailStr, TypeAdapter, ValidationError  # From pyjwt
-from app.core.exception import APIException
+from pydantic import EmailStr, EmailStr, TypeAdapter, ValidationError 
+from app.core.exception import APIException, ErrorMessage
 from app.models.user import UserRole
-from argon2 import PasswordHasher  # From argon2-cffi
+from argon2 import PasswordHasher 
 
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends
@@ -22,7 +21,7 @@ REFRESH_SECRET_KEY = settings.REFRESH_SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
-
+AUTH_TOKEN_URL = "/api/auth/login"
 
 
 
@@ -48,13 +47,17 @@ FormData = Annotated[EmailOAuth2PasswordRequestForm, Depends()]
 
 
 # OAuth2PasswordBearer is used to extract the token from the Authorization header.
-oauth_scheme = OAuth2PasswordBearer(
-	# This is for Swagger UI to know where to send the username and password for token generation.
+oauth_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(
+	# This is for Swagger UI to know where_fields to send the username and password for token generation.
 	# Otherwise, it is not needed for the actual token validation/generation, as we 
 	# will handle that explicitly in our login endpoint.
-	tokenUrl="/api/auth/login",
+	tokenUrl=AUTH_TOKEN_URL,
 	scopes={role.value: role.label for role in UserRole}
 )
+
+# optional scheme for public routes where_fields authentication is not required
+# but need to check if user is logged in or not. (like GitHub public repo view)
+oauth_scheme_optional = OAuth2PasswordBearer(tokenUrl=AUTH_TOKEN_URL, auto_error=False)
 
 
 Token = Annotated[str, Depends(oauth_scheme)]
@@ -78,7 +81,7 @@ def verify_password(password: str, hashed_pw: str) -> bool:
 		return False
 
 
-def create_access_token(user_id: int, expire_delta: Optional[timedelta] = None) -> str:
+def create_access_token(user_id: int, expire_delta: timedelta | None = None) -> str:
 	"""Generates a signed JWT Access Token."""
 	to_encode: dict = {"sub": str(user_id)}
 	expire = datetime.now(UTC) + (expire_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -88,10 +91,20 @@ def create_access_token(user_id: int, expire_delta: Optional[timedelta] = None) 
 	return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(user_id: int, expire_delta: Optional[timedelta] = None) -> str:
+def create_refresh_token(user_id: int, expire_delta: timedelta | None = None) -> str:
 	"""Generates a signed JWT Refresh Token."""
 	to_encode: dict = {"sub": str(user_id)}
 	expire = datetime.now(UTC) + (expire_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
 	to_encode.update({"exp": expire})
 	
 	return jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_access_token(token: str) -> dict:
+	"""Decodes and verifies a JWT Access Token."""
+	try:
+		return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+	except jwt.ExpiredSignatureError:
+		raise APIException.Unauthorized(ErrorMessage.ACCESS_TOKEN_EXPIRED)
+	except jwt.PyJWTError:
+		raise APIException.Unauthorized(ErrorMessage.ACCESS_TOKEN_INVALID)

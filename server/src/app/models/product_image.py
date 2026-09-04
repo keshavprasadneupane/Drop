@@ -2,6 +2,7 @@ from enum import Enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 from app.models.base import Base
+from app.models.static_files import MimeType
 from sqlalchemy import (
 	Integer, ForeignKey, DateTime, func
 )
@@ -22,6 +23,11 @@ class ProductImageConstraintsName(Enum):
 
 
 class ProductImage(Base):
+	"""
+	A association table that links products to their images. Each entry represents a relationship between a product and an image file.
+	This table has a many-to-many relationship with both Product and StaticFile models.
+	For this table the mime type must be image/* .
+	"""
 	__tablename__ = "product_images"
 
 	file_id: Mapped[int] = mapped_column(
@@ -53,3 +59,12 @@ class ProductImage(Base):
 	product: Mapped["Product"] = relationship(
 		"Product", back_populates="product_images"
 	)
+
+	@staticmethod
+	def is_supported_image_type(type: str) -> bool:
+		"""
+		Check if the provided mime type is a supported image type.
+		:param type: The mime type to check.
+		:return: True if the mime type is a supported image type, False otherwise.
+		"""
+		return type in MimeType.G_IMAGES

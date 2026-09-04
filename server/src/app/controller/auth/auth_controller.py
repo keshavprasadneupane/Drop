@@ -5,7 +5,7 @@ from app.core.database import DB
 from app.core.database_errors import (
 	DatabaseConstraint,
 )
-from app.core.exception import APIException, ErrorMsg
+from app.core.exception import APIException, ErrorMessage
 from app.core.security import hash_password, verify_password
 from app.models.user import User, UserConstraints
 from app.schema.auth import RegisterRequest
@@ -42,13 +42,13 @@ class AuthController:
 		DatabaseConstraint(
 			constraint_name=UserConstraints.EMAIL_UQ.value,
 			sqlite_identifier="users.email",
-			message=ErrorMsg.EMAIL_ALREADY_EXISTS,
+			message=ErrorMessage.EMAIL_ALREADY_EXISTS,
 			exception=APIException.Conflict,
 		),
 		DatabaseConstraint(
 			constraint_name=UserConstraints.USERNAME_UQ.value,
 			sqlite_identifier="users.username",
-			message=ErrorMsg.USERNAME_ALREADY_EXISTS,
+			message=ErrorMessage.USERNAME_ALREADY_EXISTS,
 			exception=APIException.Conflict,
 		),
 	]
@@ -74,7 +74,7 @@ class AuthController:
 
 		if user is None:
 			raise APIException.Unauthorized(
-				ErrorMsg.INVALID_CREDENTIALS,
+				ErrorMessage.INVALID_CREDENTIALS,
 				debug_detail=(
 					f"Login attempt failed for email: {email}. "
 					"User not found."
@@ -82,7 +82,7 @@ class AuthController:
 			)
 		if not verify_password(password, user.hashed_password):
 			raise APIException.Unauthorized(
-				ErrorMsg.INVALID_CREDENTIALS,
+				ErrorMessage.INVALID_CREDENTIALS,
 				debug_detail=(
 					f"Login attempt failed for email: {email}. "
 					"Incorrect password."
@@ -146,7 +146,7 @@ class AuthController:
 
 		if user is None:
 			raise APIException.NotFound(
-				ErrorMsg.USER_NOT_FOUND,
+				ErrorMessage.USER_NOT_FOUND,
 				debug_detail=(
 					f"Deletion attempt failed for user_id: {user_id}. "
 					"User not found."
