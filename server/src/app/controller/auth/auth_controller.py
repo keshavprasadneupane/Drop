@@ -9,7 +9,7 @@ from app.core.exception import APIException, ErrorMessage
 from app.core.security import hash_password, verify_password
 from app.models.user import User, UserConstraints
 from app.schema.auth import RegisterRequest
-from app.core.decorators import basic_api_guard,db_constraints_guard
+from app.core.decorators import handle_api_errors,handle_db_errors
 
 # Controller methods focus solely on business logic.
 #
@@ -53,7 +53,7 @@ class AuthController:
 		),
 	]
 	@staticmethod
-	@basic_api_guard("An error occurred during the login process.")
+	@handle_api_errors("An error occurred during the login process.")
 	async def login(email: EmailStr, password: str, db: DB) -> User:
 		"""
 		Authenticate a user using their email and password.
@@ -91,7 +91,7 @@ class AuthController:
 		return user
 
 	@staticmethod
-	@db_constraints_guard(
+	@handle_db_errors(
 		error_message="An error occurred during the registration process.",
 		constraints=USER_CONSTRAINT_ERRORS,
 	)
@@ -125,7 +125,7 @@ class AuthController:
 		return new_user
 
 	@staticmethod
-	@basic_api_guard(
+	@handle_api_errors(
 		"An error occurred while deleting the user.",
 		rollback=True,
 	)

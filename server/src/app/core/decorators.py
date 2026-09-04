@@ -1,63 +1,48 @@
 from functools import wraps
 from inspect import iscoroutinefunction, signature
+from typing import Iterable
 from sqlalchemy.exc import IntegrityError
-from app.core.database_errors import DatabaseErrorResolver
+from app.core.database_errors import DatabaseConstraint, DatabaseErrorResolver
 from app.core.exception import APIException
 
 
-def basic_api_guard(
-	error_message: str,
+def handle_api_errors(
+	error_message: str = "An unexpected error occurred.",
 	rollback: bool = False,
 	db_param_name: str = "db",
-	):
+):
 	"""
-	Generic exception-handling decorator for controller and service methods.
+	Catch unhandled exceptions at the API boundary and map them to standard APIExceptions.
 
-	Used to eliminate repetitive try/except blocks when only standard
-	API error handling is required.
+	This decorator is best suited for read operations (GET logic) or simple business
+	logic layers. It handles unexpected failures by turning them into clean InternalServerError
+	responses, while allowing explicitly raised application exceptions to pass through.
 
-	Best suited for read operations (GET-style logic), but can also be
-	used for write operations when database constraint resolution is not
-	needed. Optionally performs transaction rollback before propagating
-	errors.
-
-	Behavior:
-		- Preserves explicitly raised APIException instances.
-		- Converts unexpected exceptions into InternalServerError.
-		- Supports both sync and async functions.
-		- Optionally rolls back the database session on failure.
+	Note:
+		For write operations that rely on database-level constraints (e.g., unique bounds, 
+		foreign keys), prefer using `@handle_db_errors`. When using this decorator on 
+		writes, manually validate business rules beforehand:
+		
+		>>> user = grab_user_by_email(email, db)
+		>>> if user:
+		>>>     raise APIException.Conflict("User with this email already exists.")
 
 	Typical usage:
+		>>> @handle_api_errors("An error occurred while retrieving the user.")
+		>>> async def get_user(user_id: int, db: Session):
+		>>>     return await service.get_user(user_id, db)
 
-		@basic_api_guard(
-			"An error occurred while retrieving the user."
-		)
-		async def get_user(...):
-			...
-
-		@basic_api_guard(
-			"An error occurred while deleting the user.",
-			rollback=True,
-		)
-		async def delete_user(...):
-			...
+		>>> @handle_api_errors("An error occurred while deleting the user.", rollback=True)
+		>>> async def delete_user(user_id: int, db: Session):
+		>>>     return await service.delete_user(user_id, db)
 
 	Args:
-		error_message:
-			User-facing message used when an unexpected exception occurs.
-
-		rollback:
-			Whether to automatically roll back the database session
-			before re-raising exceptions.
-
-		db_param_name:
-			Name of the database session parameter in the decorated
-			function signature.
+		error_message: The user-facing message used if an unexpected error occurs.
+		rollback: If True, automatically rolls back the database session on failure.
+		db_param_name: The name of the DB session parameter in the decorated function.
 
 	Raises:
-		APIException:
-			The original APIException or a generated
-			InternalServerError.
+		APIException: The original explicit APIException or a wrapped InternalServerError.
 	"""
 	def decorator(func):
 
@@ -71,19 +56,15 @@ def basic_api_guard(
 		@wraps(func)
 		async def async_wrapper(*args, **kwargs):
 			db = get_db(*args, **kwargs)
-
 			try:
 				return await func(*args, **kwargs)
-
 			except APIException.Base:
 				if rollback and db is not None:
 					await db.rollback()
 				raise
-
 			except Exception as e:
 				if rollback and db is not None:
 					await db.rollback()
-
 				raise APIException.InternalServerError(
 					message=error_message,
 					debug_detail=str(e),
@@ -92,102 +73,64 @@ def basic_api_guard(
 		@wraps(func)
 		def sync_wrapper(*args, **kwargs):
 			db = get_db(*args, **kwargs)
-
 			try:
 				return func(*args, **kwargs)
-
 			except APIException.Base:
 				if rollback and db is not None:
 					db.rollback()
 				raise
-
 			except Exception as e:
 				if rollback and db is not None:
 					db.rollback()
-
 				raise APIException.InternalServerError(
 					message=error_message,
 					debug_detail=str(e),
 				)
 
-		return (
-			async_wrapper
-			if iscoroutinefunction(func)
-			else sync_wrapper
-		)
+		return async_wrapper if iscoroutinefunction(func) else sync_wrapper
 
 	return decorator
 
 
-
-def db_constraints_guard(
+def handle_db_errors(
 	*,
-	error_message: str,
-	constraints: list,
+	error_message: str = "An unexpected database error occurred.",
+	constraints: Iterable[DatabaseConstraint] = (),
 	rollback: bool = True,
 	db_param_name: str = "db",
 ):
 	"""
-	Database-aware exception-handling decorator for create, update,
-	and delete operations.
+	Intercept database integrity violations and map them to structured API responses.
 
-	Used when a method may trigger database constraint violations such as
-	UNIQUE, FOREIGN KEY, CHECK, or NOT NULL constraints.
-
-	This decorator removes the need for repetitive IntegrityError,
-	rollback, and generic exception handling code by automatically
-	translating database constraint failures into structured API
-	exceptions.
-
-	Behavior:
-		- Resolves IntegrityError exceptions using
-		DatabaseErrorResolver.
-		- Preserves explicitly raised APIException instances.
-		- Converts unexpected exceptions into InternalServerError.
-		- Supports both sync and async functions.
-		- Automatically rolls back failed transactions when enabled.
+	Designed for mutation operations (CREATE, UPDATE, DELETE). This decorator catches 
+	SQLAlchemy `IntegrityError` exceptions (such as unique, foreign key, or check constraint 
+	failures) and passes them to the `DatabaseErrorResolver` to translate them into 
+	specific, actionable HTTP exceptions.
 
 	Typical usage:
+		@handle_db_errors(error_message="Registration failed.")
+		async def register(payload: UserRegisterSchema, db: Session):
+			...
 
-		@db_constraints_guard(
+		@handle_db_errors(
 			error_message="Registration failed.",
 			constraints=USER_CONSTRAINT_ERRORS,
 		)
-		async def register(...):
-			...
-
-		@db_constraints_guard(
-			error_message="Failed to create project.",
-			constraints=PROJECT_CONSTRAINT_ERRORS,
-		)
-		async def create_project(...):
+		async def register_with_custom_constraints(payload: UserRegisterSchema, db: Session):
 			...
 
 	Args:
-		error_message:
-			User-facing message used when an unexpected exception occurs.
-
-		constraints:
-			Collection of DatabaseConstraint mappings used to convert
-			database constraint violations into API exceptions.
-
-		rollback:
-			Whether to automatically roll back the database session
-			before re-raising exceptions.
-
-		db_param_name:
-			Name of the database session parameter in the decorated
-			function signature.
+		error_message: Fallback user-facing message if an unhandled non-DB exception occurs.
+		constraints: Optional distinct mappings to override default DB error resolution rules.
+		rollback: If True, automatically rolls back the database session on failure.
+		db_param_name: The name of the DB session parameter in the decorated function.
 
 	Raises:
-		APIException:
-			A constraint-specific API exception resolved from an
-			IntegrityError, the original APIException, or a generated
-			InternalServerError.
+		APIException: A resolved constraint error, the original exception, or an InternalServerError.
 	"""
-
 	def decorator(func):
 		func_signature = signature(func)
+		constraints_list = list(constraints)
 
 		def get_db(*args, **kwargs):
 			bound = func_signature.bind_partial(*args, **kwargs)
@@ -196,29 +139,22 @@ def db_constraints_guard(
 		@wraps(func)
 		async def async_wrapper(*args, **kwargs):
 			db = get_db(*args, **kwargs)
-
 			try:
 				return await func(*args, **kwargs)
-
 			except IntegrityError as e:
 				if rollback and db is not None:
 					await db.rollback()
-
 				raise DatabaseErrorResolver.resolve(
 					error=e,
-					constraints=constraints,
+					constraints=constraints_list,
 				)
-
 			except APIException.Base:
 				if rollback and db is not None:
 					await db.rollback()
-
 				raise
-
 			except Exception as e:
 				if rollback and db is not None:
 					await db.rollback()
-
 				raise APIException.InternalServerError(
 					message=error_message,
 					debug_detail=str(e),
@@ -227,38 +163,27 @@ def db_constraints_guard(
 		@wraps(func)
 		def sync_wrapper(*args, **kwargs):
 			db = get_db(*args, **kwargs)
-
 			try:
 				return func(*args, **kwargs)
-
 			except IntegrityError as e:
 				if rollback and db is not None:
 					db.rollback()
-
 				raise DatabaseErrorResolver.resolve(
 					error=e,
-					constraints=constraints,
+					constraints=constraints_list,
 				)
-
 			except APIException.Base:
 				if rollback and db is not None:
 					db.rollback()
-
 				raise
-
 			except Exception as e:
 				if rollback and db is not None:
 					db.rollback()
-
 				raise APIException.InternalServerError(
 					message=error_message,
 					debug_detail=str(e),
 				)
 
-		return (
-			async_wrapper
-			if iscoroutinefunction(func)
-			else sync_wrapper
-		)
+		return async_wrapper if iscoroutinefunction(func) else sync_wrapper
 
 	return decorator
