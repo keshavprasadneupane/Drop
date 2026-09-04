@@ -1,9 +1,9 @@
 from fastapi import APIRouter,status
 
-from server.controller.auth.auth_controller import AuthController
-from server.core.database import DB
-from server.models.user import User
-from server.schema.auth import RegisterRequest, RegisterResponse
+from app.controller.auth.auth_controller import AuthController
+from app.core.database import DB
+from app.models.user import User
+from app.schema.auth import RegisterRequest, RegisterResponse
 
 
 router = APIRouter()# the parent has defined prefix and tags, so no need to define here

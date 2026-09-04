@@ -1,12 +1,12 @@
 from fastapi import APIRouter
-from server.controller.auth.auth_controller import AuthController
-from server.view.deps import AnyUser
-from server.core.exception import APIException,ErrorMsg
-from server.core.database import DB
-from server.schema.auth import MeResponse
+from app.controller.auth.auth_controller import AuthController
+from app.view.deps import AnyUser
+from app.core.exception import APIException,ErrorMsg
+from app.core.database import DB
+from app.schema.auth import MeResponse
 from fastapi import status
 
-from server.view.deps import AnyUser
+from app.view.deps import AnyUser
 
 
 router = APIRouter()# the parent has defined prefix and tags, so no need to define here

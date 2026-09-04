@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from fastapi import Depends
 from typing import AsyncGenerator, Annotated
-from server.models.base import Base
-from  server.settings import settings
+from app.models.base import Base
+from  app.settings import settings
 
 
 engine = create_async_engine( settings.DATABASE_URL , echo = True)

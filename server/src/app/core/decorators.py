@@ -1,8 +1,8 @@
 from functools import wraps
 from inspect import iscoroutinefunction, signature
 from sqlalchemy.exc import IntegrityError
-from server.core.database_errors import DatabaseErrorResolver
-from server.core.exception import APIException
+from app.core.database_errors import DatabaseErrorResolver
+from app.core.exception import APIException
 
 
 def basic_api_guard(

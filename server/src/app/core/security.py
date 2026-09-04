@@ -4,15 +4,15 @@ from typing import Optional, Annotated
 
 import jwt
 from pydantic import EmailStr, EmailStr, TypeAdapter, ValidationError  # From pyjwt
-from server.core.exception import APIException
-from server.models.user import UserRole
+from app.core.exception import APIException
+from app.models.user import UserRole
 from argon2 import PasswordHasher  # From argon2-cffi
 
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from server.settings import settings
+from app.settings import settings
 
 # Initialize the modern Argon2 hasher
 ph = PasswordHasher()

@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from server.core.security import FormData ,create_access_token,create_refresh_token
-from server.core.exception import APIException
-from server.controller.auth.auth_controller import AuthController
-from server.core.database import DB
-from server.schema.auth import LoginResponse
+from app.core.security import FormData ,create_access_token,create_refresh_token
+from app.core.exception import APIException
+from app.controller.auth.auth_controller import AuthController
+from app.core.database import DB
+from app.schema.auth import LoginResponse
 from fastapi import status
 
 

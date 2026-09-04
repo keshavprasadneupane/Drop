@@ -1,20 +1,24 @@
 from __future__ import annotations
 from enum import Enum
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
 from sqlalchemy import (
 	Integer, String, Boolean, Text, ForeignKey, DateTime, UniqueConstraint,
 	Table, func, Column, sql, CheckConstraint
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pydantic import EmailStr
-from server.models.base import Base
+from app.models.base import Base
+
+if TYPE_CHECKING: # to avoid circular import issues, only import StaticFile for type checking
+	from app.models.static_files import StaticFile
+
 
 class UserRole(str, Enum):
 	"""
-	Represents the hierarchical roles a user can hold in the Personal Bug Tracker.
-	
-	Roles are designed sequentially to allow hierarchical permission checking 
-	(e.g., if a route requires DEVELOPER access, ADMIN and SUPER automatically qualify).
+	A Example Role Enum for a User model, demonstrating how to define roles with
+	  associated permissions and hierarchy levels.
+	Update the roles and their hierarchy as needed for your application.
 	"""
 	SUPER = "super"
 	ADMIN = "admin"
@@ -100,6 +104,8 @@ class User(Base):
 	role: Mapped[UserRole] = mapped_column(String(50), nullable=False, default=UserRole.READER)
 	is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 	created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-	updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now(),
-)
+	updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())
 	soft_deleted_at: Mapped[Optional[DateTime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+	# Relationships
+	static_files: Mapped[List["StaticFile"]] = relationship("StaticFile", back_populates="user", cascade="all, delete-orphan")

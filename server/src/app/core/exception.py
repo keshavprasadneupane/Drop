@@ -2,7 +2,7 @@ from __future__ import annotations
 from fastapi import HTTPException
 from fastapi import status as http_status
 
-from server.settings import settings
+from app.settings import settings
 
 class ErrorMsg:
 	"""Centralized registry for standard API error messages."""

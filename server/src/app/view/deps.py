@@ -6,11 +6,11 @@ from fastapi import Security
 from fastapi.security import SecurityScopes
 import jwt
 
-from server.core.database import DB
-from server.core.exception import APIException, ErrorMsg
-from server.core.security import Token, SECRET_KEY, ALGORITHM
-from server.models import User
-from server.models.user import UserRole
+from app.core.database import DB
+from app.core.exception import APIException, ErrorMsg
+from app.core.security import Token, SECRET_KEY, ALGORITHM
+from app.models import User
+from app.models.user import UserRole
 
 
 async def get_user_by_email(email_id: str, db: DB):

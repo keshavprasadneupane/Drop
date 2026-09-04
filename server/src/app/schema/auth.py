@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
-from server.models.user import UserRole
+from app.models.user import UserRole
 
 class LoginResponse(BaseModel):
 	user_id: int
@@ -26,7 +26,7 @@ class RegisterResponse(BaseModel):
 
 class MeResponse(BaseModel):
 	"""
-	THis model only gives very basic information about user,
+	This model only gives very basic information about user,
 	so frondend can use this to constomize the UI based on user role and other information.
 	"""
 	user_id: int

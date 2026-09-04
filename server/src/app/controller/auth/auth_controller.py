@@ -1,15 +1,15 @@
 from pydantic import EmailStr
 from sqlalchemy import select
 
-from server.core.database import DB
-from server.core.database_errors import (
+from app.core.database import DB
+from app.core.database_errors import (
 	DatabaseConstraint,
 )
-from server.core.exception import APIException, ErrorMsg
-from server.core.security import hash_password, verify_password
-from server.models.user import User, UserConstraints
-from server.schema.auth import RegisterRequest
-from server.core.decorators import basic_api_guard,db_constraints_guard
+from app.core.exception import APIException, ErrorMsg
+from app.core.security import hash_password, verify_password
+from app.models.user import User, UserConstraints
+from app.schema.auth import RegisterRequest
+from app.core.decorators import basic_api_guard,db_constraints_guard
 
 # Controller methods focus solely on business logic.
 #

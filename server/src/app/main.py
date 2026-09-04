@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from server.settings import settings
-from server.view import routers
+from app.settings import settings
+from app.view import routers
 
 
 app = FastAPI()
@@ -11,7 +11,7 @@ app.include_router(routers)
 @app.get("/")
 def read_root():
 	return {
-		"message": "Welcome to the Personal Bug Tracker API!",
+		"message": "Welcome to the Drop API!",
 		"DEBUG": settings.DEBUG,
 		"docs": "/docs",
 		"redoc": "/redoc",

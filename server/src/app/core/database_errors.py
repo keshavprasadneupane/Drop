@@ -6,7 +6,7 @@ from typing import Iterable, Optional
 from fastapi import HTTPException
 from sqlalchemy.exc import DBAPIError, IntegrityError, OperationalError
 
-from server.core.exception import APIException, ErrorMsg
+from app.core.exception import APIException, ErrorMsg
 
 
 @dataclass(frozen=True, slots=True)

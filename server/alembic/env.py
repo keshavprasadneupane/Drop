@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 from sqlalchemy.engine import Connection
 
-from server.settings import settings
-from server.models.base import Base  # adjust if your Base is elsewhere
+from app.settings import settings
+from app.models.base import Base  # adjust if your Base is elsewhere
 
 # Alembic config
 config = context.config
