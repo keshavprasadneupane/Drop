@@ -15,7 +15,8 @@ from app.models.base import Base
 if TYPE_CHECKING: # to avoid circular import issues, only import StaticFile for type checking
 	from app.models.static_files import StaticFile
 	from app.models.product import Product
-
+	from app.models.review import Review
+	
 class UserRole(str, Enum):
 	"""
 	A Example Role Enum for a User model, demonstrating how to define roles with
@@ -75,3 +76,4 @@ class User(Base):
 	# Relationships
 	static_files: Mapped[List["StaticFile"]] = relationship("StaticFile", back_populates="user", cascade="all, delete-orphan")
 	products: Mapped[List["Product"]] = relationship("Product", back_populates="user", cascade="all, delete-orphan")
+	reviews: Mapped[List["Review"]] = relationship("Review", back_populates="user", cascade="all, delete-orphan")

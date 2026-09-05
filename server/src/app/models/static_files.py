@@ -75,4 +75,5 @@ class StaticFile(Base):
 
 	# Relationships
 	user:Mapped["User"] = relationship("User", back_populates="static_files")
-	product_images:Mapped[list["ProductImage"]] = relationship("ProductImage", back_populates="file")
+	product_images:Mapped[list["ProductImage"]] = relationship(
+		"ProductImage", back_populates="file", cascade="all, delete-orphan",passive_deletes=True)

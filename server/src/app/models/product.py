@@ -12,6 +12,8 @@ from app.models.base import Base
 if TYPE_CHECKING: # to avoid circular import issues, only import User for type checking
 	from app.models.user import User
 	from app.models.product_image import ProductImage
+	from app.models.clothes import Cloth
+	from app.models.review import Review
 
 class ProductConstraintsName(str,Enum):
 	"""
@@ -43,5 +45,8 @@ class Product(Base):
 	# Relationships
 	user: Mapped["User"] = relationship("User", back_populates="products")
 	product_images: Mapped[list["ProductImage"]] = relationship(
-		"ProductImage", back_populates="product", cascade="all, delete-orphan"
+		"ProductImage", back_populates="product", cascade="all, delete-orphan",passive_deletes=True
 	)
+	# for now assuming one product can have only one cloth, but in future it can be one to many relationship.
+	cloth: Mapped["Cloth"] = relationship("Cloth", back_populates="product", cascade="all, delete-orphan",passive_deletes=True)
+	reviews: Mapped[list["Review"]] = relationship("Review", back_populates="product", cascade="all, delete-orphan",passive_deletes=True)
