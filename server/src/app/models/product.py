@@ -13,7 +13,7 @@ if TYPE_CHECKING: # to avoid circular import issues, only import User for type c
 	from app.models.user import User
 	from app.models.product_image import ProductImage
 
-class ProductConstraintsName(Enum):
+class ProductConstraintsName(str,Enum):
 	"""
 	Using an Enum for constraint names ensures consistency and avoids hardcoding strings throughout the codebase.
 	And Useful for Database Error Resolving, especially when handling unique constraint violations or foreign key errors.
@@ -31,8 +31,8 @@ class Product(Base):
 
 	id:Mapped[int] = mapped_column(Integer, primary_key=True)
 	user_id:Mapped[int] = mapped_column(Integer, ForeignKey(
-		"users.id",name=ProductConstraintsName.FK_PRODUCTS_USER_ID.value
-		), nullable=False)
+		"users.id",name=ProductConstraintsName.FK_PRODUCTS_USER_ID.value, ondelete="CASCADE"), nullable=False)
+	
 	name:Mapped[str] = mapped_column(String(255), nullable=False,)
 	description:Mapped[str] = mapped_column(String(255), nullable=True,)
 	price:Mapped[float] = mapped_column(Numeric(10, 2), nullable=False) # always NPR convert to other on frontend.

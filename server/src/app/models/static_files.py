@@ -13,7 +13,7 @@ if TYPE_CHECKING: # to avoid circular import issues, only import User for type c
 	from app.models.user import User
 	from app.models.product_image import ProductImage
 
-class StaticFileConstraintsName(Enum):
+class StaticFileConstraintsName(str,Enum):
 	"""
 	Using an Enum for constraint names ensures consistency and avoids hardcoding strings throughout the codebase.
 	And Useful for Database Error Resolving, especially when handling unique constraint violations or foreign key errors.
@@ -32,9 +32,6 @@ class MimeType(str, Enum):
     Attributes:
         IMAGE_*: Supported image MIME type constants.
         PDF: Application PDF constant.
-        G_IMAGES: List of all supported image MIME types for file validation.
-        G_APPLICATIONS: List of all supported application MIME types.
-        G_ALL: Consolidated list of all registered MIME types.
     """
 
     IMAGE_JPEG = "image/jpeg"
@@ -46,6 +43,13 @@ class MimeType(str, Enum):
     PDF = "application/pdf"
 
 class MineTypeEnumGroup:
+	"""
+	Groupings of MIME types for validation and categorization.
+	Attributes:
+		G_IMAGES: List of all supported image MIME types for file validation.
+		G_APPLICATIONS: List of all supported application MIME types.
+		G_ALL: Consolidated list of all registered MIME types.
+	"""
 	G_IMAGES = [MimeType.IMAGE_JPEG, MimeType.IMAGE_PNG, MimeType.IMAGE_GIF, MimeType.IMAGE_BMP, MimeType.IMAGE_WEBP]
 	G_APPLICATIONS = [MimeType.PDF]
 	G_ALL = G_IMAGES + G_APPLICATIONS
@@ -65,19 +69,10 @@ class StaticFile(Base):
 	
 	name:Mapped[str] = mapped_column(String(255), nullable=False,)
 	url:Mapped[str] = mapped_column(String(255), nullable=False,)
-	mime_type:Mapped[MimeType] = mapped_column(String(100), nullable=False,)	
+	mime_type:Mapped[str] = mapped_column(String(100), nullable=False,)	
 	created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 	updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())
 
 	# Relationships
 	user:Mapped["User"] = relationship("User", back_populates="static_files")
 	product_images:Mapped[list["ProductImage"]] = relationship("ProductImage", back_populates="file")
-
-
-	@property
-	def mime_type_enum(self) -> MimeType:
-		"""Returns the MIME type as a MimeType enum instance."""
-		try:
-			return MimeType(self.mime_type)
-		except ValueError:
-			return None  # or raise an exception if you prefer strict handling

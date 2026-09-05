@@ -66,7 +66,7 @@ class User(Base):
 	username: Mapped[str] = mapped_column(String(50), nullable=False)
 	full_name: Mapped[Optional[str]] = mapped_column(String(100))
 	hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-	role: Mapped[UserRole] = mapped_column(String(50), nullable=False, default=UserRole.CUSTOMER)
+	role: Mapped[str] = mapped_column(String(50), nullable=False, default=UserRole.CUSTOMER)
 	is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 	created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 	updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())

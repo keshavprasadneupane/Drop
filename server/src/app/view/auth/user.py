@@ -1,12 +1,10 @@
 from fastapi import APIRouter
 from app.controller.auth.auth_controller import AuthController
-from app.view.deps import CustomerUser
+from app.view.deps import AuthenticatedUser, CustomerUser
 from app.core.exception import APIException,ErrorMessage
 from app.core.database import DB
 from app.schema.auth import MeResponse
 from fastapi import status
-
-from app.view.deps import CustomerUser
 
 
 router = APIRouter()# the parent has defined prefix and tags, so no need to define here
@@ -17,7 +15,7 @@ router = APIRouter()# the parent has defined prefix and tags, so no need to defi
 	status_code=status.HTTP_200_OK,
 	response_model=MeResponse
 )
-def get_user_basic_info(user: CustomerUser, db: DB):
+def get_user_basic_info(user: AuthenticatedUser, db: DB):
 	"""
 	Returns basic information about the currently authenticated user.
 
@@ -71,7 +69,7 @@ def get_user_basic_info(user: CustomerUser, db: DB):
 		}	
 	}
 )
-async def delete_user(user_id: int, db: DB):
-	await AuthController.delete_user_by_id(user_id=user_id, db=db)
+async def delete_user(user_id: int,user: AuthenticatedUser ,db: DB):
+	await AuthController.delete_user_by_id(user=user,user_id=user_id, db=db)
 	return None
 	

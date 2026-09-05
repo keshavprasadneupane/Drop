@@ -47,36 +47,62 @@ class ErrorMessage:
 	UNEXPECTED_ERROR = "An unexpected error occurred. Please try again later."
 
 
-	# Granting access to specific actions based on user roles
-	GRANTING_PRIVILEGE_ROLE_ERROR = "Users with a base VIEWER account cannot be granted elevated project roles."
+	# --------------------------------------------------------------------------
+	# 1. Validation & Input Errors (HTTP 400 / 422)
+	# --------------------------------------------------------------------------
+	@staticmethod
+	def field_required(field_name: str) -> str:
+		return f"The field '{field_name}' is required."
+
+	# --------------------------------------------------------------------------
+	# 2. Access Control & Authorization (HTTP 403)
+	# --------------------------------------------------------------------------
+	@staticmethod
+	def forbidden_action(action: str) -> str:
+		"""User-friendly message (safe for end users)."""
+		return f"You do not have permission to {action}."
 
 	@staticmethod
 	def invalid_role(role_name: str) -> str:
 		return f"Access denied: your role '{role_name}' does not have permission."
 
 	@staticmethod
-	def not_found(resource: str, value: str | int) -> str:
-		return f"{resource} with identifier '{value}' does not exist."
+	def forbidden_action_detail(subject: str, action: str, resource: str) -> str:
+		"""Generic developer debug details (logged internally).
+		
+		Examples:
+			forbidden_detail(str(user.id), "DELETE", f"User:{target_id}")
+			forbidden_detail("Anonymous", "UPDATE", "Order:102")
+		"""
+		return f"Subject '{subject}' attempted unauthorized action '{action}' on resource '{resource}'."
+
+	# --------------------------------------------------------------------------
+	# 3. Resource Existence & Lookups (HTTP 404)
+	# --------------------------------------------------------------------------
+	@staticmethod
+	def not_found(resource: str) -> str:
+		"""User-friendly message (safe for end users)."""
+		return f"{resource} not found.".strip()
 
 	@staticmethod
-	def field_required(field_name: str) -> str:
-		return f"The field '{field_name}' is required."
+	def not_found_detail(resource: str, resource_id: int) -> str:
+		"""Generic developer debug details (logged internally).
+		Examples:
+			not_found_detail("User", 42)
+		"""
+		return f"{resource} with ID {resource_id} not found."
 
-	@staticmethod
-	def referential_integrity(details: str = "") -> str:
-		return f"Referential integrity violation: {details}".strip()
-
+	# --------------------------------------------------------------------------
+	# 4. Database & Integrity Violations (HTTP 409 / 422)
+	# --------------------------------------------------------------------------
 	@staticmethod
 	def unique_constraint_violation(field_name: str) -> str:
 		return f"Unique constraint violation: '{field_name}' already exists."
 
 	@staticmethod
-	def not_found_with_id(resource: str, resource_id: int) -> str:
-		return f"{resource} with ID {resource_id} not found."
-	
-	@staticmethod 
-	def no_permission(action:str,resource: str) -> str:
-		return f"You do not have permission to {action} {resource}."
+	def referential_integrity(details: str = "") -> str:
+		return f"Referential integrity violation: {details}."
+
 
 class APIException:
 	# =========================================================

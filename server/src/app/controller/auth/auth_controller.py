@@ -7,7 +7,7 @@ from app.core.database_errors import (
 )
 from app.core.exception import APIException, ErrorMessage
 from app.core.security import AuthHelper
-from app.models.user import User, UserConstraints
+from app.models.user import User, UserConstraints, UserRole
 from app.schema.auth import RegisterRequest
 from app.core.decorators import handle_api_errors,handle_db_errors
 
@@ -129,20 +129,25 @@ class AuthController:
 		"An error occurred while deleting the user.",
 		rollback=True,
 	)
-	async def delete_user_by_id(user_id: int, db: DB) -> None:
+	async def delete_user_by_id(user:User,user_id: int, db: DB) -> None:
 		"""
 		Delete a user by their ID.
-
 		Raises:
+			APIException.Forbidden:
+				If the authenticated user does not have permission to delete the target user.
 			APIException.NotFound:
-				If the user with the given ID does not exist.
+				If the user with the specified ID does not exist.
 			APIException.InternalServerError:
-				If an unexpected error occurs during deletion.
+				If an unexpected error occurs during the deletion process.
+		
 		"""
-		result = await db.execute(
-			select(User).where(User.id == user_id)
-		)
-		user: User | None = result.scalar_one_or_none()
+		if user.id != user_id and user.role not in [UserRole.ADMIN.value, UserRole.SUPER.value]:
+			raise APIException.Forbidden(
+				message =ErrorMessage.forbidden_action(action="delete user"),
+				debug_detail= ErrorMessage.forbidden_action_detail(subject=user.id, action="delete user", resource=f"User:{user_id}")
+			)
+		#not using the vuilder here since the query is simple and we want to avoid the overhead of the builder for a single query.
+		user = await db.get(User, user_id)
 
 		if user is None:
 			raise APIException.NotFound(

@@ -47,7 +47,7 @@ async def login(form_data:FormData, db: DB):
 
 	return LoginResponse(
 		user_id=user.id,
-		role=user.role.value,
+		role=user.role,
 		access_token=access_token, 
 		refresh_token=refresh_token,
 		token_type="bearer"

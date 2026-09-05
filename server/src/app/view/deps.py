@@ -107,9 +107,7 @@ CustomerUser = Annotated[
 
 AuthenticatedUser = Annotated[
 	User,
-	# so any authenticated user can hit these routes, regardless of role
-	# for now scoping to Customer and Lister roles, but can be expanded to include other roles as needed
-	Security(get_current_user, scopes=[UserRole.CUSTOMER.value, UserRole.LISTER.value])
+	Security(get_current_user, scopes=[UserRole.CUSTOMER.value, UserRole.LISTER.value, UserRole.ADMIN.value, UserRole.SUPER.value])
 ]
 
 OpenUser = Annotated[

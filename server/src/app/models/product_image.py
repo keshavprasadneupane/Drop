@@ -1,8 +1,8 @@
+from __future__ import annotations
 from enum import Enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 from app.models.base import Base
-from app.models.static_files import MimeType
 from sqlalchemy import (
 	Integer, ForeignKey, DateTime, func
 )
@@ -10,10 +10,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # to avoid circular import issues, only import for type checking
 	from app.models.product import Product
-	from app.models.static_files import StaticFile
+	from app.models.static_files import StaticFile,MineTypeEnumGroup
 
 
-class ProductImageConstraintsName(Enum):
+
+class ProductImageConstraintsName(str,Enum):
 	"""
 	Using an Enum for constraint names ensures consistency and avoids hardcoding strings throughout the codebase.
 	Useful for Database Error Resolving, especially when handling unique constraint violations or foreign key errors.
@@ -67,4 +68,4 @@ class ProductImage(Base):
 		:param type: The mime type to check.
 		:return: True if the mime type is a supported image type, False otherwise.
 		"""
-		return type in MimeType.G_IMAGES
+		return type in MineTypeEnumGroup.G_IMAGES
