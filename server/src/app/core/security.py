@@ -4,7 +4,9 @@ from typing import  Annotated
 import jwt
 from pydantic import EmailStr, EmailStr, TypeAdapter, ValidationError 
 from app.core.exception import APIException, ErrorMessage
+
 from app.models.user import UserRole
+
 from argon2 import PasswordHasher 
 
 from argon2.exceptions import VerifyMismatchError
@@ -62,49 +64,51 @@ oauth_scheme_optional = OAuth2PasswordBearer(tokenUrl=AUTH_TOKEN_URL, auto_error
 
 Token = Annotated[str, Depends(oauth_scheme)]
 
-def hash_password(password: str) -> str:
-	"""Hashes a plain-text password using Argon2id."""
-	return ph.hash(password)
+class AuthHelper:
+	@staticmethod
+	def hash_password(password: str) -> str:
+		"""Hashes a plain-text password using Argon2id."""
+		return ph.hash(password)
 
+	@staticmethod
+	def verify_password(password: str, hashed_pw: str) -> bool:
+		"""
+		Verify a plain-text password against a stored Argon2 hash.
 
-def verify_password(password: str, hashed_pw: str) -> bool:
-	"""
-	Verify a plain-text password against a stored Argon2 hash.
+		Note:
+			Pass the password exactly as entered by the user. Do NOT hash it
+			beforehand; Argon2 handles the hashing and comparison internally.
+		"""
+		try:
+			return ph.verify(hashed_pw, password)
+		except VerifyMismatchError:
+			return False
 
-	Note:
-		Pass the password exactly as entered by the user. Do NOT hash it
-		beforehand; Argon2 handles the hashing and comparison internally.
-	"""
-	try:
-		return ph.verify(hashed_pw, password)
-	except VerifyMismatchError:
-		return False
+	@staticmethod
+	def create_access_token(user_id: int, expire_delta: timedelta | None = None) -> str:
+		"""Generates a signed JWT Access Token."""
+		to_encode: dict = {"sub": str(user_id)}
+		expire = datetime.now(UTC) + (expire_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+		to_encode.update({"exp": expire})
+		
+		# PyJWT expects the payload, key, and algorithm name directly
+		return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+	@staticmethod
+	def create_refresh_token(user_id: int, expire_delta: timedelta | None = None) -> str:
+		"""Generates a signed JWT Refresh Token."""
+		to_encode: dict = {"sub": str(user_id)}
+		expire = datetime.now(UTC) + (expire_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+		to_encode.update({"exp": expire})
+		
+		return jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
 
-def create_access_token(user_id: int, expire_delta: timedelta | None = None) -> str:
-	"""Generates a signed JWT Access Token."""
-	to_encode: dict = {"sub": str(user_id)}
-	expire = datetime.now(UTC) + (expire_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-	to_encode.update({"exp": expire})
-	
-	# PyJWT expects the payload, key, and algorithm name directly
-	return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-
-def create_refresh_token(user_id: int, expire_delta: timedelta | None = None) -> str:
-	"""Generates a signed JWT Refresh Token."""
-	to_encode: dict = {"sub": str(user_id)}
-	expire = datetime.now(UTC) + (expire_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
-	to_encode.update({"exp": expire})
-	
-	return jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
-
-
-def decode_access_token(token: str) -> dict:
-	"""Decodes and verifies a JWT Access Token."""
-	try:
-		return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-	except jwt.ExpiredSignatureError:
-		raise APIException.Unauthorized(ErrorMessage.ACCESS_TOKEN_EXPIRED)
-	except jwt.PyJWTError:
-		raise APIException.Unauthorized(ErrorMessage.ACCESS_TOKEN_INVALID)
+	@staticmethod
+	def decode_access_token(token: str) -> dict:
+		"""Decodes and verifies a JWT Access Token."""
+		try:
+			return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+		except jwt.ExpiredSignatureError:
+			raise APIException.Unauthorized(ErrorMessage.ACCESS_TOKEN_EXPIRED)
+		except jwt.PyJWTError:
+			raise APIException.Unauthorized(ErrorMessage.ACCESS_TOKEN_INVALID)

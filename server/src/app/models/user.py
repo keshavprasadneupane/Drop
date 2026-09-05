@@ -3,6 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 from app.core.database import DB
 
+
 from sqlalchemy import (
 	Integer, String, Boolean, Text, ForeignKey, DateTime, UniqueConstraint,
 	Table, func, Column, sql, CheckConstraint
@@ -13,7 +14,7 @@ from app.models.base import Base
 
 if TYPE_CHECKING: # to avoid circular import issues, only import StaticFile for type checking
 	from app.models.static_files import StaticFile
-
+	from app.models.product import Product
 
 class UserRole(str, Enum):
 	"""
@@ -73,3 +74,4 @@ class User(Base):
 
 	# Relationships
 	static_files: Mapped[List["StaticFile"]] = relationship("StaticFile", back_populates="user", cascade="all, delete-orphan")
+	products: Mapped[List["Product"]] = relationship("Product", back_populates="user", cascade="all, delete-orphan")

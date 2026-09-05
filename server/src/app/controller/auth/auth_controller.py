@@ -6,7 +6,7 @@ from app.core.database_errors import (
 	DatabaseConstraint,
 )
 from app.core.exception import APIException, ErrorMessage
-from app.core.security import hash_password, verify_password
+from app.core.security import AuthHelper
 from app.models.user import User, UserConstraints
 from app.schema.auth import RegisterRequest
 from app.core.decorators import handle_api_errors,handle_db_errors
@@ -80,7 +80,7 @@ class AuthController:
 					"User not found."
 				),
 			)
-		if not verify_password(password, user.hashed_password):
+		if not AuthHelper.verify_password(password, user.hashed_password):
 			raise APIException.Unauthorized(
 				ErrorMessage.INVALID_CREDENTIALS,
 				debug_detail=(
@@ -115,7 +115,7 @@ class AuthController:
 			username=data.username,
 		)
 
-		new_user.hashed_password = hash_password(data.password)
+		new_user.hashed_password = AuthHelper.hash_password(data.password)
 
 		db.add(new_user)
 

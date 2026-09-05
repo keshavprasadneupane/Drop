@@ -1,4 +1,13 @@
 from .user import User 
-from .static_files import StaticFile,MimeType,MimeTypeString
+from .static_files import StaticFile,MimeType
 from .product import Product
 from .product_image import ProductImage
+
+
+__all__ = [
+	"User",
+	"StaticFile",
+	"Product",
+	"ProductImage",
+	"MimeType",
+]

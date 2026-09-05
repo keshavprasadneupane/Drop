@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.core.security import FormData ,create_access_token,create_refresh_token
+from app.core.security import FormData ,AuthHelper
 from app.core.exception import APIException
 from app.controller.auth.auth_controller import AuthController
 from app.core.database import DB
@@ -42,8 +42,8 @@ async def login(form_data:FormData, db: DB):
 	password = form_data.password
 
 	user = await AuthController.login(email, password, db)
-	access_token = create_access_token(user.id)
-	refresh_token = create_refresh_token(user.id)
+	access_token = AuthHelper.create_access_token(user.id)
+	refresh_token = AuthHelper.create_refresh_token(user.id)
 
 	return LoginResponse(
 		user_id=user.id,

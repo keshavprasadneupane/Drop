@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 from sqlalchemy import (
-	Integer, String, ForeignKey, DateTime, TypeDecorator, UniqueConstraint,
+	Integer, String, ForeignKey, DateTime, UniqueConstraint,
 	func
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -45,36 +45,10 @@ class MimeType(str, Enum):
 
     PDF = "application/pdf"
 
-    # Functional MIME type groups for batch validation.
-    # The 'G_' prefix denotes a list group rather than a single MIME type.
-    G_IMAGES = [IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_BMP, IMAGE_WEBP]
-    G_APPLICATIONS = [PDF]
-
-    G_ALL = G_IMAGES + G_APPLICATIONS
-
-
-class MimeTypeString(TypeDecorator):
-	"""Stores as plain VARCHAR in DB, converts to MimeType Enum in Python."""
-	impl = String
-	cache_ok = True
-
-	def __init__(self, length=100, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-		self.impl = String(length)
-
-	def process_bind_param(self, value, dialect):
-		if value is None:
-			return None
-		return value.value if isinstance(value, MimeType) else str(value)
-
-	def process_result_value(self, value, dialect):
-		if value is None:
-			return None
-		try:
-			return MimeType(value)
-		except ValueError:
-			# or u can log a warning or rase an exception if the value is not a valid MimeType
-			return None 
+class MineTypeEnumGroup:
+	G_IMAGES = [MimeType.IMAGE_JPEG, MimeType.IMAGE_PNG, MimeType.IMAGE_GIF, MimeType.IMAGE_BMP, MimeType.IMAGE_WEBP]
+	G_APPLICATIONS = [MimeType.PDF]
+	G_ALL = G_IMAGES + G_APPLICATIONS
 
 
 class StaticFile(Base):
@@ -91,10 +65,19 @@ class StaticFile(Base):
 	
 	name:Mapped[str] = mapped_column(String(255), nullable=False,)
 	url:Mapped[str] = mapped_column(String(255), nullable=False,)
-	mime_type:Mapped[MimeType] = mapped_column(MimeTypeString(100), nullable=False,)	
+	mime_type:Mapped[MimeType] = mapped_column(String(100), nullable=False,)	
 	created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 	updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())
 
 	# Relationships
 	user:Mapped["User"] = relationship("User", back_populates="static_files")
 	product_images:Mapped[list["ProductImage"]] = relationship("ProductImage", back_populates="file")
+
+
+	@property
+	def mime_type_enum(self) -> MimeType:
+		"""Returns the MIME type as a MimeType enum instance."""
+		try:
+			return MimeType(self.mime_type)
+		except ValueError:
+			return None  # or raise an exception if you prefer strict handling

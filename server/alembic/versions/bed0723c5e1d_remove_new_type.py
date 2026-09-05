@@ -1,19 +1,19 @@
-"""static file,project,product images table 
+"""Remove New Type
 
-Revision ID: ce476b8a5add
+Revision ID: bed0723c5e1d
 Revises: 
-Create Date: 2026-09-04 12:06:42.812252
+Create Date: 2026-09-05 11:40:27.305907
 
 """
 from typing import Sequence, Union
 
 from alembic import op
-from app.models.static_files import MimeTypeString
 import sqlalchemy as sa
+import app
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ce476b8a5add'
+revision: str = 'bed0723c5e1d'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -54,7 +54,7 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('url', sa.String(length=255), nullable=False),
-    sa.Column('mime_type', MimeTypeString(length=100), nullable=False),
+    sa.Column('mime_type', sa.String(length=100), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='fk_static_files_user_id'),

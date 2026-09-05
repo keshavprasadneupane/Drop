@@ -71,7 +71,7 @@ class Logger:
 
 
 # Fallback mode: Prints directly to stdout
-logger = Logger(None)  
+Log = Logger(None)  
 
 # Standard logging mode: Uncomment to delegate to Python's logging module
 # logger = Logger(logging.getLogger(__name__))

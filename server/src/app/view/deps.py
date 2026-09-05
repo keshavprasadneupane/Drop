@@ -7,7 +7,7 @@ import jwt
 
 from app.core.database import DB
 from app.core.exception import APIException, ErrorMessage
-from app.core.security import Token, decode_access_token, oauth_scheme_optional
+from app.core.security import Token, AuthHelper, oauth_scheme_optional
 from app.models import User
 from app.models.user import UserRole 
 
@@ -20,7 +20,7 @@ async def get_current_user(
 	credentials_error = APIException.Unauthorized(ErrorMessage.INVALID_CREDENTIALS)
 
 	try:
-		payload = decode_access_token(token)
+		payload = AuthHelper.decode_access_token(token)
 		user_id = payload.get("sub")
 		if user_id is None:
 			raise credentials_error
@@ -72,7 +72,7 @@ async def get_optional_user(
 		return None
 		
 	try:
-		payload = decode_access_token(token)
+		payload = AuthHelper.decode_access_token(token)
 		user_id = payload.get("sub")
 		if user_id is None:
 			return None
