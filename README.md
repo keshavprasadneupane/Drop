@@ -184,20 +184,21 @@ The authentication system includes:
 
 ### Authentication Flow
 
-```
-User Registration
-       ↓
-Password Hashing
-       ↓
-User Login
-       ↓
-JWT Token Generation
-       ↓
-Authenticated Requests
-       ↓
-Protected Resources
-```
+```mermaid
+flowchart TD
+    A["User Registration"]
+    B["Password Hashing<br/>(Passlib)"]
+    C["User Login"]
+    D["JWT Token Generation"]
+    E["Authenticated Requests<br/>(Bearer Token)"]
+    F["Protected Resources"]
 
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+```
 ---
 
 # 🛒 E-commerce Functionality
@@ -268,26 +269,31 @@ The backend is built using **FastAPI** and follows a RESTful API architecture.
 
 Example API structure:
 
-```
-/api
-│
-├── /users
-│   ├── /register
-│   ├── /login
-│   └── /users
-│
-├── /products
-│   ├── GET
-│   ├── POST
-│   ├── PUT
-│   └── DELETE
-│
-├── /payments
-│   └── POST
-│
-└── /orders
-    ├── GET
-    └── POST
+```mermaid
+graph LR
+    API["<b>/api</b>"]
+
+    %% Users Branch
+    API --> USERS["<b>/users</b>"]
+    USERS --> REG["<b>/register</b>"]
+    USERS --> LOG["<b>/login</b>"]
+    USERS --> USR["<b>/users</b>"]
+
+    %% Products Branch
+    API --> PROD["<b>/products</b>"]
+    PROD --> P_GET["<b>GET</b>"]
+    PROD --> P_POST["<b>POST</b>"]
+    PROD --> P_PUT["<b>PUT</b>"]
+    PROD --> P_DEL["<b>DELETE</b>"]
+
+    %% Payments Branch
+    API --> PAY["<b>/payments</b>"]
+    PAY --> PAY_POST["<b>POST</b>"]
+
+    %% Orders Branch
+    API --> ORD["<b>/orders</b>"]
+    ORD --> O_GET["<b>GET</b>"]
+    ORD --> O_POST["<b>POST</b>"]
 ```
 
 ---
@@ -295,30 +301,17 @@ Example API structure:
 # 🧩 Application Architecture
 
 Drop follows a separated frontend and backend architecture:
+```mermaid 
+flowchart TD
+    A["React.js<br/>Frontend<br/><br/>Presentation Tier<br/>(SPA, Tailwind CSS, React Router)"]
+    
+    B["FastAPI<br/>Backend<br/><br/>Application / Logic Tier<br/>(Routing, Auth, Validation)"]
+    
+    C["Database<br/>SQLite / PostgreSQL<br/><br/>Data Tier"]
 
-```
-                    ┌──────────────────────┐
-                    │      React.js        │
-                    │      Frontend        │
-                    └──────────┬───────────┘
-                               │
-                            Axios
-                               │
-                            REST API
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │       FastAPI        │
-                    │       Backend        │
-                    └──────────┬───────────┘
-                               │
-                           SQLAlchemy
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │      Database        │
-                    │ SQLite / PostgreSQL  │
-                    └──────────────────────┘
+    A -->|"Axios (HTTP/JSON)<br/>REST API Calls"| B
+    B -->|"SQLAlchemy ORM"| C
+
 ```
 
 This architecture keeps the frontend and backend independent, making the application easier to maintain, test, deploy, and scale.
@@ -411,7 +404,7 @@ git push origin feature/your-feature
 
 # 🌐 Live Demo
 
-Coming Soon...
+ Vercell APP:  https://dropp-ten.vercel.app/
 
 ---
 
@@ -421,13 +414,17 @@ This project is licensed under the **MIT License**.
 
 ---
 
-# 👨‍💻 Author
+# 👨‍💻 Authors
 
 **Nischal Pokhrel**
-
 - GitHub: https://github.com/Neeschal1
-- LinkedIn: [https://www.linkedin.com/in/nischal-pokhrel-6543632b7/](https://www.linkedin.com/in/nischal-pokhrel-6543632b7/)
+- LinkedIn: https://www.linkedin.com/in/nischal-pokhrel-6543632b7/
 
+**Keshav Prasad Neupane**
+- GitHub: https://github.com/keshavprasadneupane
+- LinkedIn: https://www.linkedin.com/in/keshav-prasad-neupane-259542318/
 ---
+
+
 
 <p align="center">Made with ❤️ using React.js, FastAPI & Tailwind CSS</p>
