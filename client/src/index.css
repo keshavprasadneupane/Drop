@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./assets/fonts/Poppins-Black.ttf") format("truetype");
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./assets/fonts/Poppins-Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./assets/fonts/Poppins-Medium.ttf") format("truetype");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./assets/fonts/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./assets/fonts/Poppins-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@theme {
+  --color-primaryblue: #0066FF;
+  --color-primaryred: #FF000E;
+  --color-background: #F6F5FF;
+  --color-dark: #000000;
+  --color-darkvariant: #7B7B7B;
+
+  --color-headingText: #000000;
+  --color-subHeadingText: #000000;
+  --color-descriptiveText: #8F8F8F;
+
+  --font-poppins: "Poppins";
+
+  --text-screenname: 32px;
+  --text-heading: 18px;
+  --text-subheading: 16px;
+  --text-description: 14px;
+  --text-hobbies: 10px;
+
+  --spacing-extrasmall: 4px;
+  --spacing-small: 8px;
+  --spacing-mid: 16px;
+  --spacing-large: 24px;
+  --spacing-extralarge: 32px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
